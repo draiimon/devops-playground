@@ -15,7 +15,7 @@ commonLabels:
 images:
   - name: base-image
     newName: draiimon/devops-backend
-    newTag: v0.0.2
+    newTag: v0.0.3
 
 configMapGenerator:
 - name: demo-devops-fast-api-cm
