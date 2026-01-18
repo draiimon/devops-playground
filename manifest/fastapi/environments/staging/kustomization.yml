@@ -15,7 +15,7 @@ commonLabels:
 images:
   - name: base-image
     newName: draiimon/devops-backend
-    newTag: v0.0.5
+    newTag: v0.0.6  # updated version
 
 configMapGenerator:
 - name: demo-devops-fast-api-cm
@@ -25,11 +25,16 @@ configMapGenerator:
       service: api
     disableNameSuffixHash: true
 
-# secretGenerator:
-# - name: demo-devops-fast-api-secret
-#   env: secret.properties
-#   options:
-#     disableNameSuffixHash: true
+secretGenerator:
+- name: demo-devops-fast-api-secret
+  literals:
+    - MYSQL_USER=appuser
+    - MYSQL_PASSWORD=apppassword
+    - MYSQL_DATABASE=testdb
+    - MYSQL_HOST=mysql       # MySQL service name in the same namespace
+    - MYSQL_PORT=3306
+  options:
+    disableNameSuffixHash: true
 
 patches:
 - target:
@@ -98,7 +103,7 @@ patches:
 
     - op: replace
       path: /spec/template/spec/containers/0/envFrom/1/secretRef/name
-      value: demo-devops-fast-api-secret-staging
+      value: demo-devops-fast-api-secret  # updated to match new secret
 
 - target:
     version: v1
