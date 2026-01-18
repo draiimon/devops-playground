@@ -17,8 +17,8 @@ spec:
     server: https://kubernetes.default.svc
   project: twygr
   source:
-    path: null
-    repoURL: git@github.com:SeoulX/aadinnr_files.git
+    path: manifest
+    repoURL: git@github.com:draiimon/devops-playground.git
     targetRevision: main
   syncPolicy:
     automated:
