@@ -1,11 +1,11 @@
 resources:
-- ../../../../global/base/deploy
-- ../../../../global/base/service
-- ../../../../global/base/ingress
+- ../../../global/base/deploy
+- ../../../global/base/service
+- ../../../global/base/ingress
 
 nameSuffix: -staging
 
-namespace: demo-apps
+namespace: demo
 
 commonLabels:
   service: api
@@ -14,8 +14,8 @@ commonLabels:
 
 images:
   - name: base-image
-    newName: aadinnr/demo_devops
-    newTag: backend-v4.0.5
+    newName: draiimon/devops-backend
+    newTag: v0.0.0
 
 configMapGenerator:
 - name: demo-devops-fast-api-cm
@@ -38,7 +38,7 @@ patches:
     kind: Deployment
     name: base-deploy
   patch: |-
-    # - op: add 
+    # - op: add
     #   path: /spec/template/spec/affinity
     #   value:
     #     nodeAffinity:
@@ -66,7 +66,7 @@ patches:
     #             values:
     #             - staging
     #         topologyKey: kubernetes.io/hostname
-             
+
     - op: replace
       path: /metadata/name
       value: demo-devops-fast-api
@@ -103,7 +103,7 @@ patches:
 - target:
     version: v1
     kind: Service
-    name: base-svc  
+    name: base-svc
   patch: |-
     - op: replace
       path: /metadata/name
