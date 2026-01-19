@@ -1,0 +1,162 @@
+resources:
+- ../../../global/base/deploy
+- ../../../global/base/service
+- ../../../global/base/ingress
+
+nameSuffix: -staging
+
+namespace: demo
+
+commonLabels:
+  service: frontend
+  app: demo-devops-frontend
+  environment: staging
+
+images:
+  - name: base-image
+    newName: draiimon/devops-frontend
+    newTag: v0.0.7  # updated version
+
+configMapGenerator:
+- name: demo-devops-frontend-cm
+  env: config.properties
+  options:
+    labels:
+      service: frontend
+    disableNameSuffixHash: true
+
+secretGenerator:
+- name: demo-devops-frontend-secret
+  literals:
+    - MYSQL_USER=appuser
+    - MYSQL_PASSWORD=apppassword
+    - MYSQL_DATABASE=testdb
+    - MYSQL_HOST=mysql       # MySQL service name in the same namespace
+    - MYSQL_PORT=3306
+  options:
+    disableNameSuffixHash: true
+
+patches:
+- target:
+    group: apps
+    version: v1
+    kind: Deployment
+    name: base-deploy
+  patch: |-
+    # - op: add
+    #   path: /spec/template/spec/affinity
+    #   value:
+    #     nodeAffinity:
+    #       requiredDuringSchedulingIgnoredDuringExecution:
+    #         nodeSelectorTerms:
+    #         - matchExpressions:
+    #           - key: service-type-23
+    #             operator: In
+    #             values:
+    #             - scoup
+    #     podAntiAffinity:
+    #       requiredDuringSchedulingIgnoredDuringExecution:
+    #       - labelSelector:
+    #           matchExpressions:
+    #           - key: app
+    #             operator: In
+    #             values:
+    #             - scoup
+    #           - key: service
+    #             operator: In
+    #             values:
+    #             - frontend
+    #           - key: environment
+    #             operator: In
+    #             values:
+    #             - staging
+    #         topologyKey: kubernetes.io/hostname
+
+    - op: replace
+      path: /metadata/name
+      value: demo-devops-frontend
+    - op: replace
+      path: /spec/template/spec/containers/0/name
+      value: demo-devops-frontend
+    - op: replace
+      path: /spec/replicas
+      value: 2
+    - op: replace
+      path: /spec/selector/matchLabels
+      value:
+        app: demo-devops-frontend
+        service: frontend
+        environment: staging
+    - op: replace
+      path: /spec/template/metadata/labels
+      value:
+        app: demo-devops-frontend
+        service: frontend
+        environment: staging
+    - op: replace
+      path: /spec/template/spec/containers/0/ports
+      value:
+        - containerPort: 3000
+    - op: replace
+      path: /spec/template/spec/containers/0/envFrom/0/configMapRef/name
+      value: demo-devops-frontend-cm
+
+    - op: replace
+      path: /spec/template/spec/containers/0/envFrom/1/secretRef/name
+      value: demo-devops-frontend-secret  # updated to match new secret
+- target:
+    version: v1
+    kind: Service
+    name: base-svc
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: demo-devops-frontend-svc
+    - op: replace
+      path: /spec/selector
+      value:
+        app: demo-devops-frontend
+        service: frontend
+        environment: staging
+    - op: replace
+      path: /spec/ports
+      value:
+        - name: demo-devops-frontend-svc
+          protocol: TCP
+          port: 3000
+          targetPort: 3000
+
+- target:
+    group: networking.k8s.io
+    version: v1
+    kind: Ingress
+    name: base-ingress
+  patch: |-
+    - op: replace
+      path: /metadata/name
+      value: demo-devops-frontend-ingress
+    - op: add
+      path: /metadata/annotations
+      value:
+        nginx.ingress.kubernetes.io/enable-cors: "false"
+        nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+        nginx.ingress.kubernetes.io/cors-allow-methods: "*"
+        nginx.ingress.kubernetes.io/cors-allow-headers: "*"
+        nginx.ingress.kubernetes.io/proxy-body-size: "0"
+        # nginx.ingress.kubernetes.io/rewrite-target: /
+    - op: replace
+      path: /spec/ingressClassName
+      value: nginx
+    - op: replace
+      path: /spec/rules
+      value:
+        - host: frontend-staging.local
+          http:
+            paths:
+              - path: /
+                pathType: Prefix
+                backend:
+                  service:
+                    name: demo-devops-frontend-svc
+                    port:
+                      number: 3000
