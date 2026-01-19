@@ -8,7 +8,7 @@ COPY . .
 
 # Add these two lines to catch the GitHub Secret during build
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=http://fast-api-staging.local:8000
 
 RUN npm run build
 
