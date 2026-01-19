@@ -30,8 +30,6 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          build-args: |
-            NEXT_PUBLIC_API_URL=http://fast-api-staging.local
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/devops-frontend:${{ env.IMAGE_TAG }}
 
