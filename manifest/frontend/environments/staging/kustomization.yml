@@ -15,7 +15,7 @@ commonLabels:
 images:
   - name: base-image
     newName: draiimon/devops-frontend
-    newTag: v0.0.17  # updated version
+    newTag: v0.0.18  # updated version
 
 configMapGenerator:
 - name: demo-devops-frontend-cm
